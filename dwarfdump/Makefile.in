@@ -180,18 +180,18 @@ selftest:
 	-rm -f ./selfesb
 	-rm -f ./selfmc
 	-rm -f ./selfmakename
-	$(CC) -g -c -I../libdwarf esb.c
-	$(CC) -g -c -I../libdwarf dwarf_tsearchbal.c
-	$(CC) -g -DSELFTEST  -I../libdwarf makename.c dwarf_tsearchbal.o -o selfmakename
-	$(CC) -DSELFTEST -I../libdwarf -g helpertree.c esb.o dwarf_tsearchbal.o -o selfhelpertree
+	$(CC) -g -c $(INCLUDES) $(srcdir)/esb.c
+	$(CC) -g -c $(INCLUDES) $(srcdir)/dwarf_tsearchbal.c
+	$(CC) -g -DSELFTEST  $(INCLUDES) $(srcdir)/makename.c dwarf_tsearchbal.o -o selfmakename
+	$(CC) -DSELFTEST $(INCLUDES) -g $(srcdir)/helpertree.c esb.o dwarf_tsearchbal.o -o selfhelpertree
 	./selfhelpertree
 	-rm -f ./selfhelpertree
 	./selfmakename
 	-rm -f ./selfmakename
-	$(CC) -DSELFTEST -I../libdwarf -g macrocheck.c esb.o dwarf_tsearchbal.o -o selfmc
+	$(CC) -DSELFTEST $(INCLUDES) -g $(srcdir)/macrocheck.c esb.o dwarf_tsearchbal.o -o selfmc
 	./selfmc
 	-rm -f ./selfmc
-	$(CC) -DSELFTEST -g esb.c -o selfesb
+	$(CC) -DSELFTEST -g $(srcdir)/esb.c -o selfesb
 	./selfesb
 	-rm -f ./selfesb
         
