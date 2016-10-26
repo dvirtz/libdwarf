@@ -1,0 +1,35 @@
+sudo: off
+language: c
+
+env:
+  - LIBELF_INSTALL_PREFIX=/home/$USER/libelf
+  - CONFIGURATION=Release   
+  - BUILDER=autotools
+  - BUILDER=CMake
+
+addons:
+  apt:
+    sources:
+    - george-edison55-precise-backports
+    packages:
+    - cmake
+    - cmake-data
+
+install:
+  - git clone https://github.com/dvirtz/libelf.git
+  - cd libelf
+  - git checkout cmake
+  - cmake . -B_$CONFIGURATION -DCMAKE_BUILD_TYPE=$CONFIGURATION -DCMAKE_INSTALL_PREFIX=$LIBELF_INSTALL_PREFIX
+  - cmake --build _$CONFIGURATION
+  - cmake --build _$CONFIGURATION --target install
+  - cd ..
+  
+script:
+  - if [[ "$BUILDER" == "CMake" ]]; then cmake . -B_$CONFIGURATION -DCMAKE_BUILD_TYPE=$CONFIGURATION -DLIBELF_ROOT=$LIBELF_INSTALL_PREFIX; fi
+  - if [[ "$BUILDER" == "CMake" ]]; then cmake --build _$CONFIGURATION; fi
+  - if [[ "$BUILDER" == "CMake" ]]; then cmake --build _$CONFIGURATION --target test; fi
+  - if [[ "$BUILDER" == "autotools" ]]; then export CFLAGS=-I$LIBELF_INSTALL_PREFIX/include; export CXXFLAGS=$CFLAGS; export LDFLAGS=-L$LIBELF_INSTALL_PREFIX/lib; fi
+  - if [[ "$BUILDER" == "autotools" ]]; then mkdir _build; cd _build; fi
+  - if [[ "$BUILDER" == "autotools" ]]; then $PWD/../configure; fi
+  - if [[ "$BUILDER" == "autotools" ]]; then make all; fi
+  - if [[ "$BUILDER" == "autotools" ]]; then cd dwarfdump; make test; fi
