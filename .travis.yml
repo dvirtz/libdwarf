@@ -2,10 +2,12 @@ sudo: off
 language: c
 
 env:
-  - LIBELF_INSTALL_PREFIX=/home/$USER/libelf
-  - CONFIGURATION=Release   
-  - BUILDER=autotools
-  - BUILDER=CMake
+  global:
+    - LIBELF_INSTALL_PREFIX=/home/$USER/libelf
+    - CONFIGURATION=Release   
+  matrix:
+    - BUILDER=autotools
+    - BUILDER=CMake
 
 addons:
   apt:
