@@ -75,7 +75,11 @@
 #include <fcntl.h> //open
 #include "general.h"
 #include "dwgetopt.h"
+#ifdef HAVE_LIBELF_H
 #include "gelf.h"
+#elif HAVE_LIBELF_LIBELF_H
+#include "libelf/gelf.h"
+#endif
 #include "strtabdata.h"
 #include "dwarf.h"
 #include "libdwarf.h"
