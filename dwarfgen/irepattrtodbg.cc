@@ -34,7 +34,9 @@
 #include "stdafx.h"
 #endif /* HAVE_STDAFX_H */
 
+#if HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #include <stdlib.h> // for exit
 #include <iostream>
 #include <sstream> // For BldName

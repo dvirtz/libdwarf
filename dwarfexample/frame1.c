@@ -45,7 +45,9 @@
 #include <sys/stat.h>  /* For open() */
 #include <fcntl.h>     /* For open() */
 #include <stdlib.h>     /* For exit() */
+#if HAVE_UNISTD_H
 #include <unistd.h>     /* For close() */
+#endif
 #include <string.h>     /* For strcmp* */
 #include <stdio.h>
 #include <errno.h>

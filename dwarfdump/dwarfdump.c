@@ -439,7 +439,9 @@ open_a_file(const char * name)
     /* Set to a file number that cannot be legal. */
     int f = -1;
 
-#if defined(__CYGWIN__) || defined(_WIN32)
+#ifdef _MSC_VER
+    f = _open(name, _O_RDONLY| _O_BINARY);
+#elif defined(__CYGWIN__) || defined(WIN32)
     /*  It is not possible to share file handles
         between applications or DLLs. Each application has its own
         file-handle table. For two applications to use the same file
@@ -457,7 +459,11 @@ open_a_file(const char * name)
 static void
 close_a_file(int f)
 {
+#ifdef _MSC_VER
+    _close(f);
+#else
     close(f);
+#endif
 }
 
 static int
@@ -791,7 +797,8 @@ print_object_header(UNUSEDARG Elf *elf,
 
     /* Check if header information is required */
     if (local_section_map & DW_HDR_HEADER || local_section_map == DW_HDR_ALL) {
-#ifdef _WIN32
+#ifdef WIN32
+#ifdef HAVE_ELF32_GETEHDR
     /*  Standard libelf has no function generating the names of the
         encodings, but this libelf apparently does. */
     Elf_Ehdr_Literal eh_literals;
@@ -871,7 +878,8 @@ print_object_header(UNUSEDARG Elf *elf,
         }
 #endif /* HAVE_ELF64_GETEHDR */
     }
-#endif /* _WIN32 */
+#endif /* HAVE_ELF32_GETEHDR */
+#endif /* WIN32 */
     }
     /* Print basic section information is required */
     /* Mask only known sections (debug and text) bits */

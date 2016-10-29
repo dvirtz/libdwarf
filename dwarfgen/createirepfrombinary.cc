@@ -37,7 +37,9 @@
 #include "stdafx.h"
 #endif /* HAVE_STDAFX_H */
 
+#if HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #include <stdlib.h> // for exit
 #include <iostream>
 #include <string>
@@ -83,7 +85,7 @@ public:
     ~DbgInAutoCloser() {
         Dwarf_Error err = 0;
         dwarf_finish(dbg_,&err);
-        close(fd_);
+        close_a_file(fd_);
     };
 private:
     Dwarf_Debug dbg_;
