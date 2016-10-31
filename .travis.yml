@@ -8,7 +8,7 @@ env:
   matrix:
     - BUILDER=autotools OPTIONS=""
     - BUILDER=autotools OPTIONS="--enable-shared"
-    - BUILDER=autotools OPTIONS="--enable-shared --disabled-nonshared"
+    - BUILDER=autotools OPTIONS="--enable-shared --disable-nonshared"
     - BUILDER=CMake OPTIONS=""
     - BUILDER=CMake OPTIONS="-Dshared=ON"
     - BUILDER=CMake OPTIONS="-Dshared=ON -Dnonshared=OFF"
@@ -34,7 +34,7 @@ script:
   - if [[ "$BUILDER" == "CMake" ]]; then cmake . -B_$CONFIGURATION -DCMAKE_BUILD_TYPE=$CONFIGURATION -DLIBELF_ROOT=$LIBELF_INSTALL_PREFIX $OPTIONS; fi
   - if [[ "$BUILDER" == "CMake" ]]; then cmake --build _$CONFIGURATION; fi
   - if [[ "$BUILDER" == "CMake" ]]; then cmake --build _$CONFIGURATION --target test; fi
-  - if [[ "$BUILDER" == "autotools" ]]; then export CFLAGS=-I$LIBELF_INSTALL_PREFIX/include; export CXXFLAGS=$CFLAGS; export LDFLAGS=-L$LIBELF_INSTALL_PREFIX/lib; fi
+  - if [[ "$BUILDER" == "autotools" ]]; then export CFLAGS=-I$LIBELF_INSTALL_PREFIX/include; export CXXFLAGS=$CFLAGS; export LDFLAGS=-L$LIBELF_INSTALL_PREFIX/lib; export LD_LIBRARY_PATH=$LIBELF_INSTALL_PREFIX/lib; fi
   - if [[ "$BUILDER" == "autotools" ]]; then mkdir _build; cd _build; fi
   - if [[ "$BUILDER" == "autotools" ]]; then $PWD/../configure $OPTIONS; fi
   - if [[ "$BUILDER" == "autotools" ]]; then make all; fi
