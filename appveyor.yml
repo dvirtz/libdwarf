@@ -4,22 +4,22 @@ environment:
   matrix:
     - platform: Win32
       CMAKE_GENERATOR_NAME: "Visual Studio 14 2015"
-      CMAKE_OPTIONS=""
+      CMAKE_OPTIONS: ""
     - platform: Win32
       CMAKE_GENERATOR_NAME: "Visual Studio 14 2015"
-      CMAKE_OPTIONS="-Dshared=ON"
+      CMAKE_OPTIONS: "-Dshared=ON"
     - platform: Win32
       CMAKE_GENERATOR_NAME: "Visual Studio 14 2015"
-      CMAKE_OPTIONS="-Dshared=ON nonshared=OFF"
+      CMAKE_OPTIONS: "-Dshared=ON nonshared=OFF"
     - platform: x64
       CMAKE_GENERATOR_NAME: "Visual Studio 14 2015 Win64"
-      CMAKE_OPTIONS=""
+      CMAKE_OPTIONS: ""
     - platform: x64
       CMAKE_GENERATOR_NAME: "Visual Studio 14 2015 Win64"
-      CMAKE_OPTIONS="-Dshared=ON"
+      CMAKE_OPTIONS: "-Dshared=ON"
     - platform: x64
       CMAKE_GENERATOR_NAME: "Visual Studio 14 2015 Win64"
-      CMAKE_OPTIONS="-Dshared=ON nonshared=OFF"
+      CMAKE_OPTIONS: "-Dshared=ON nonshared=OFF"
   
 configuration: Release
 
