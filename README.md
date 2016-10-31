@@ -62,7 +62,7 @@ appended to the configure step,
 both libdwarf.a and libdwarf.so 
 are built. The runtimes built will reference libdwarf.so.
 
-With `-Dnonshared=FALSE` (CMake) or `--disable-nonshared` (autotools)
+With `-Dnonshared=OFF` (CMake) or `--disable-nonshared` (autotools)
 appeded to the configure step, 
 libdwarf.so is built and used; libdwarf.a is not built.
 
