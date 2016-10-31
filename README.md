@@ -1,5 +1,5 @@
 [![Travis Build Status](https://travis-ci.org/dvirtz/libdwarf.svg?branch=cmake)](https://travis-ci.org/dvirtz/libdwarf)
-[![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/329i5jhw9osold1a?svg=true)](https://ci.appveyor.com/project/dvirtz/libdwarf)
+[![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/oxh8pg7hsuav2jrl?svg=true)](https://ci.appveyor.com/project/dvirtz/libdwarf)
 
 ## BUILDING
 
