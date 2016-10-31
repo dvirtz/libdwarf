@@ -5,10 +5,8 @@ ac_check_headers(sys/types.h sys/stat.h stdlib.h string.h memory.h strings.h int
 
 # libdwarf default-disabled shared
 option(shared "build shared library libdwarf.so and use it if present" FALSE)
-set(BUILD_SHARED_LIBS ${shared})
 
 option(nonshared "build archive library libdwarf.a" TRUE)
-set(build_nonshared ${nonshared})
 
 #  This adds compiler option -Wall (gcc compiler warnings)
 option(wall "Add -Wall" FALSE)

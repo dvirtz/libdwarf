@@ -12,7 +12,7 @@ add_executable(dwarfgen ${SOURCES} ${HEADERS} ${CONFIGURATION_FILES})
 
 set_folder(dwarfgen dwarfgen)
 
-target_link_libraries(dwarfgen PRIVATE dwarf ${dwfzlib})
+target_link_libraries(dwarfgen PRIVATE ${dwarf-target} ${dwfzlib})
 
 set(SUFFIX $<$<EQUAL:${CMAKE_SIZEOF_VOID_P},8>:64>)
 set(LIBDIR lib${SUFFIX})

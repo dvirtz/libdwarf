@@ -5,7 +5,7 @@ add_library(esb_and_tsearchbal OBJECT esb.c dwarf_tsearchbal.c)
 set_folder(esb_and_tsearchbal dwarfdump)
 
 target_include_directories(esb_and_tsearchbal PRIVATE
-    $<TARGET_PROPERTY:dwarf,INTERFACE_INCLUDE_DIRECTORIES>)
+    $<TARGET_PROPERTY:${dwarf-target},INTERFACE_INCLUDE_DIRECTORIES>)
 
 msvc_posix(esb_and_tsearchbal)
 
@@ -30,7 +30,7 @@ target_compile_options(dwarfdump PRIVATE ${dwfwall})
 
 target_compile_definitions(dwarfdump PRIVATE "CONFPREFIX=${CMAKE_INSTALL_PREFIX}/lib")
 
-target_link_libraries(dwarfdump PRIVATE dwarf ${dwfzlib}) 
+target_link_libraries(dwarfdump PRIVATE ${dwarf-target} ${dwfzlib}) 
 
 # We need this as naming.o has external references we cannot have
 # in the tree builds.
@@ -44,7 +44,7 @@ add_executable(tag_tree_build ${TAG_TREE_SOURCES})
 
 set_folder(tag_tree_build dwarfdump/generators)
 
-target_link_libraries(tag_tree_build PRIVATE dwarf)
+target_link_libraries(tag_tree_build PRIVATE ${dwarf-target})
 
 set(TAG_ATTR_SOURCES tag_attr.c tag_common.c common.c makename.c trivial_naming.c dwgetopt.c dwarf_tsearchbal.c)
  
@@ -52,7 +52,7 @@ add_executable(tag_attr_build ${TAG_ATTR_SOURCES})
 
 set_folder(tag_attr_build dwarfdump/generators)
 
-target_link_libraries(tag_attr_build PRIVATE dwarf)
+target_link_libraries(tag_attr_build PRIVATE ${dwarf-target})
 
 # Plain GNU C dash E does not work on a .list, 
 # so copy to a .c name to run
@@ -86,7 +86,7 @@ add_executable(testesb ${TESTESB_SOURCES})
 set_folder(testesb dwarfdump/tests)
 
 target_include_directories(testesb PRIVATE
-    $<TARGET_PROPERTY:dwarf,INTERFACE_INCLUDE_DIRECTORIES>)
+    $<TARGET_PROPERTY:${dwarf-target},INTERFACE_INCLUDE_DIRECTORIES>)
 
 add_test(NAME test COMMAND testesb)
 
@@ -119,7 +119,7 @@ set_folder(selfhelpertree dwarfdump/tests)
 target_compile_definitions(selfhelpertree PRIVATE SELFTEST)
 
 target_include_directories(selfhelpertree PRIVATE
-    $<TARGET_PROPERTY:dwarf,INTERFACE_INCLUDE_DIRECTORIES>)
+    $<TARGET_PROPERTY:${dwarf-target},INTERFACE_INCLUDE_DIRECTORIES>)
 
 add_test(NAME selfhelpertree COMMAND selfhelpertree)
 
@@ -133,7 +133,7 @@ add_test(NAME selfhelpertree COMMAND selfhelpertree)
 #target_compile_definitions(selfmc PRIVATE SELFTEST)
 #
 #target_include_directories(selfmc PRIVATE
-#    $<TARGET_PROPERTY:dwarf,INTERFACE_INCLUDE_DIRECTORIES>)
+#    $<TARGET_PROPERTY:${dwarf-target},INTERFACE_INCLUDE_DIRECTORIES>)
 #
 #add_test(NAME selfmc COMMAND selfmc)
 	
@@ -146,7 +146,7 @@ set_folder(selfesb dwarfdump/tests)
 target_compile_definitions(selfesb PRIVATE SELFTEST)
 
 target_include_directories(selfesb PRIVATE
-    $<TARGET_PROPERTY:dwarf,INTERFACE_INCLUDE_DIRECTORIES>)
+    $<TARGET_PROPERTY:${dwarf-target},INTERFACE_INCLUDE_DIRECTORIES>)
 
 add_test(NAME selfesb COMMAND selfesb)
 

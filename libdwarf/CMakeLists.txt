@@ -29,26 +29,38 @@ set(GENNAMES_OUTPUT dwarf_names.c dwarf_names.h dwarf_names_enum.h dwarf_names_n
 add_custom_command(OUTPUT ${GENNAMES_OUTPUT}
     COMMAND gennames ${dwarf_namestable} -i ${CMAKE_CURRENT_SOURCE_DIR} -o .
     DEPENDS gennames libdwarf.h.in)
+	
+list(LENGTH DWARF_TARGETS targetCount)
+math(EXPR targetCount "${targetCount} - 1")
+foreach(i RANGE ${targetCount})
+	list(GET DWARF_TARGETS ${i} target)
+	list(GET DWARF_TYPES ${i} type)
+	add_library(${target} ${type} ${SOURCES} ${HEADERS} ${GENNAMES_OUTPUT} ${CONFIGURATION_FILES})
 
-add_library(dwarf ${SOURCES} ${HEADERS} ${GENNAMES_OUTPUT} ${CONFIGURATION_FILES})
+	set_folder(${target} libdwarf)
 
-set_folder(dwarf libdwarf)
+	target_include_directories(${target} PUBLIC ${LIBELF_INCLUDE_DIRS})
 
-target_include_directories(dwarf PUBLIC ${LIBELF_INCLUDE_DIRS})
+	msvc_posix(${target})
 
-msvc_posix(dwarf)
+	target_link_libraries(${target} PUBLIC ${LIBELF_LIBRARIES})
+	
+	set_target_properties(${target} PROPERTIES OUTPUT_NAME dwarf)
 
-target_link_libraries(dwarf PUBLIC ${LIBELF_LIBRARIES})
+	set(SUFFIX $<$<EQUAL:${CMAKE_SIZEOF_VOID_P},8>:64>)
+	set(LIBDIR lib${SUFFIX})
+	set(BINDIR bin${SUFFIX})
 
-set(SUFFIX $<$<EQUAL:${CMAKE_SIZEOF_VOID_P},8>:64>)
-set(LIBDIR lib${SUFFIX})
-set(BINDIR bin${SUFFIX})
+	install(TARGETS ${target}
+		RUNTIME DESTINATION ${BINDIR}		
+		LIBRARY DESTINATION ${LIBDIR}
+		ARCHIVE DESTINATION ${LIBDIR})
+endforeach()
 
-install(TARGETS dwarf
-	RUNTIME DESTINATION ${BINDIR}		
-	LIBRARY DESTINATION ${LIBDIR}
-	ARCHIVE DESTINATION ${LIBDIR})
-    
+if(UNIX AND shared)
+	target_link_libraries(dwarf-shared PUBLIC z)
+endif()
+		
 if(UNIX)
 
 #

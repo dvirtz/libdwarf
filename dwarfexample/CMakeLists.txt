@@ -10,7 +10,7 @@ set_folder(simplereader dwarfexample)
 
 target_compile_definitions(simplereader PRIVATE CONFPREFIX={CMAKE_INSTALL_PREFIX}/lib)
 
-target_link_libraries(simplereader PRIVATE dwarf ${dwfzlib})
+target_link_libraries(simplereader PRIVATE ${dwarf-target} ${dwfzlib})
 
 set_source_group(FRAME1_SOURCES "Source Files" frame1.c)
 
@@ -20,4 +20,4 @@ set_folder(frame1 dwarfexample)
 
 target_compile_definitions(frame1 PRIVATE CONFPREFIX={CMAKE_INSTALL_PREFIX}/lib)
 
-target_link_libraries(frame1 PRIVATE dwarf ${dwfzlib})
+target_link_libraries(frame1 PRIVATE ${dwarf-target} ${dwfzlib})

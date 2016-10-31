@@ -25,7 +25,21 @@ list(APPEND CMAKE_REQUIRED_INCLUDES ${LIBELF_INCLUDE_DIRS})
 
 include(configure.cmake)
 
+if(nonshared)
+	set(DWARF_TARGETS dwarf-static)
+	set(DWARF_TYPES STATIC)
+	set(dwarf-target dwarf-static)
+endif()
+if(shared)
+	list(APPEND DWARF_TARGETS dwarf-shared)
+	list(APPEND DWARF_TYPES SHARED)
+	set(dwarf-target dwarf-shared)
+endif()
+
 add_subdirectory(libdwarf)
 add_subdirectory(dwarfexample)
 add_subdirectory(dwarfdump)
 add_subdirectory(dwarfgen)
+
+add_custom_target(dd
+	DEPENDS ${DWARF_TARGETS} dwarfdump)
