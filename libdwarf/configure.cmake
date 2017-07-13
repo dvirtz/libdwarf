@@ -7,8 +7,8 @@ ac_check_headers(alloca.h elf.h elfaccess.h libelf.h libelf/libelf.h  sys/types.
 message(STATUS "Assuming struct Elf for the default libdwarf.h")
 configure_file(libdwarf.h.in libdwarf.h COPYONLY)
 
-ac_check_lib(elf elf64_getehdr)
-ac_check_lib(elf elf64_getshdr)
+ac_check_lib(${LIBELF_LIBRARIES} elf64_getehdr)
+ac_check_lib(${LIBELF_LIBRARIES} elf64_getshdr)
 
 ac_try_compile("
 int main()
