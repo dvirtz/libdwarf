@@ -91,8 +91,13 @@ set(dwfzlib $<$<BOOL:${HAVE_ZIB}>:"z")
 
 #  The following are for FreeBSD and others which
 #  use struct _Elf as the actual struct type.
+if(HAVE_LIBELF_H)
+    set(_Elf_HEADER "<libelf.h>")
+else()
+    set(_Elf_HEADER "<libelf/libelf.h>")
+endif()
 ac_try_compile("
-#include ${LOCATION_OF_LIBELFHEADER}
+#include ${_Elf_HEADER}
 struct _Elf; 
 typedef struct _Elf Elf;
 int main()
@@ -102,12 +107,12 @@ int main()
 }"
 _Elf_found)
 if(_Elf_found)
-    message(STATUS "Found struct _Elf in ${LOCATION_OF_LIBELFHEADER}, using it in libdwarf.h") 
+    message(STATUS "Found struct _Elf in ${_Elf_HEADER}, using it in libdwarf.h") 
     file(READ libdwarf.h.in CONTENT)
     string(REPLACE "struct Elf" "struct _Elf" CONTENT ${CONTENT})
     file(WRITE libdwarf.h ${CONTENT}) 
 else()
-    message(STATUS "${LOCATION_OF_LIBELFHEADER} does not have struct _Elf")
+    message(STATUS "${_Elf_HEADER} does not have struct _Elf")
 endif()
 
 #  checking for ia 64 types, which might be enums, using HAVE_R_IA_64_DIR32LSB

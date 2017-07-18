@@ -361,7 +361,6 @@ function(ac_try_compile SOURCE VAR)
             RESULT_VARIABLE RESVAR 
             OUTPUT_VARIABLE OUTPUT
             ERROR_VARIABLE OUTPUT
-            OUTPUT_QUIET
         )
         
         # Set up result:
