@@ -1,7 +1,6 @@
 # Helper functions for translating autoconf projects. Several functions
 # are lifted from the Mono sources
 
-include (CheckCSourceCompiles)
 include (CheckIncludeFile)
 include (TestBigEndian)
 include (CheckFunctionExists)
@@ -341,13 +340,19 @@ function(ac_try_compile SOURCE VAR)
         # Set up CMakeLists.txt for static library:
         file(WRITE 
             ${CMAKE_TMP_DIR}/CMakeLists.txt
-            "add_library(compile STATIC src.c)"
+            "
+            cmake_minimum_required(VERSION ${CMAKE_VERSION})
+            project(test_${VAR})
+            add_library(compile STATIC src.c)
+            target_include_directories(compile PRIVATE ${CMAKE_REQUIRED_INCLUDES})
+            "
         )
         
         # Configure:
         execute_process(
             COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" . 
             WORKING_DIRECTORY ${CMAKE_TMP_DIR}
+            OUTPUT_QUIET
         )
         
         # Build:
@@ -356,11 +361,12 @@ function(ac_try_compile SOURCE VAR)
             RESULT_VARIABLE RESVAR 
             OUTPUT_VARIABLE OUTPUT
             ERROR_VARIABLE OUTPUT
+            OUTPUT_QUIET
         )
         
         # Set up result:
         if(RESVAR EQUAL 0)
-            set(${VAR} 1 CACHE INTERNAL "Test ${VAR}")
+            set(${VAR} TRUE CACHE INTERNAL "Test ${VAR}")
             if(NOT CMAKE_REQUIRED_QUIET)
                 message(STATUS "Performing Test ${VAR} - Success")
             endif()
@@ -373,7 +379,7 @@ function(ac_try_compile SOURCE VAR)
             if(NOT CMAKE_REQUIRED_QUIET)
                 message(STATUS "Performing Test ${VAR} - Failed")
             endif()
-            set(${VAR} "" CACHE INTERNAL "Test ${VAR}")
+            set(${VAR} FALSE CACHE INTERNAL "Test ${VAR}")
             file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
             "Performing C SOURCE FILE Test ${VAR} failed with the following output:\n"
             "${OUTPUT}\n"

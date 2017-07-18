@@ -3,6 +3,15 @@ include(AutoconfHelper)
 ac_init()
 ac_check_headers(alloca.h elf.h elfaccess.h libelf.h libelf/libelf.h  sys/types.h sys/ia64/elf.h)
 
+# Find out where the elf header is.
+if(HAVE_ELF_H)
+    set(LOCATION_OF_LIBELFHEADER "<elf.h>")
+elseif(HAVE_LIBELF_H)
+    set(LOCATION_OF_LIBELFHEADER "<libelf.h>")
+elseif(HAVE_LIBELF_LIBELF_H)
+    set(LOCATION_OF_LIBELFHEADER "<libelf/libelf.h>")
+endif()
+
 #  The default libdwarf is the one with struct Elf
 message(STATUS "Assuming struct Elf for the default libdwarf.h")
 configure_file(libdwarf.h.in libdwarf.h COPYONLY)
@@ -82,64 +91,35 @@ set(dwfzlib $<$<BOOL:${HAVE_ZIB}>:"z")
 
 #  The following are for FreeBSD and others which
 #  use struct _Elf as the actual struct type.
-ac_try_compile([=[
-#include <libelf/libelf.h>
+ac_try_compile("
+#include ${LOCATION_OF_LIBELFHEADER}
 struct _Elf; 
 typedef struct _Elf Elf;
 int main()
 {
     struct _Elf *a = 0;
     return 0;
-}]=]
-found_in_libefl_libefl_h)
-if(found_in_libefl_libefl_h)
-    message(STATUS "Found struct _Elf in libelf/libelf.h, using it in libdwarf.h") 
-else()
-    message(STATUS "libelf/libelf.h does not have struct _Elf")
-endif()
-
-ac_try_compile([=[
-#include <libelf.h>
-struct _Elf; 
-typedef struct _Elf Elf;
-int main()
-{
-    struct _Elf *a = 0;
-    return 0;
-}]=]
-found_in_libefl_h)
-if(found_in_libefl_h)
-    message(STATUS "Found struct _Elf in libelf.h, using it in libdwarf.h") 
-else()
-    message(STATUS "libelf.h does not have struct _Elf")
-endif()
-
-if(found_in_libefl_libefl_h OR found_in_libefl_h)
+}"
+_Elf_found)
+if(_Elf_found)
+    message(STATUS "Found struct _Elf in ${LOCATION_OF_LIBELFHEADER}, using it in libdwarf.h") 
     file(READ libdwarf.h.in CONTENT)
     string(REPLACE "struct Elf" "struct _Elf" CONTENT ${CONTENT})
     file(WRITE libdwarf.h ${CONTENT}) 
+else()
+    message(STATUS "${LOCATION_OF_LIBELFHEADER} does not have struct _Elf")
 endif()
 
 #  checking for ia 64 types, which might be enums, using HAVE_R_IA_64_DIR32LSB
 #  to stand in for a small set.
 ac_try_compile("
-#include <elf.h>
+#include ${LOCATION_OF_LIBELFHEADER}
 int main()
 {
     int p; p = R_IA_64_DIR32LSB;
     return 0;
 }" 
 HAVE_R_IA_64_DIR32LSB)
-
-ac_try_compile("
-#include <libelf.h>
-int main()
-{
-    struct _Elf a; int i; i = 0;
-    return 0;
-}" 
-HAVE_STRUCT_UNDERSCORE_ELF)
-message(STATUS "Checking libelf defines struct _Elf... ${HAVE_STRUCT_UNDERSCORE_ELF}")
 
 ac_try_compile("
 #include <libelf.h>
@@ -152,7 +132,7 @@ HAVE_RAW_LIBELF_OK)
 
 ac_try_compile("
 #define _GNU_SOURCE
-#include <libelf.h>
+#include ${LOCATION_OF_LIBELFHEADER}
 int main()
 {
     off64_t  p; p = 0;
@@ -183,7 +163,7 @@ int main()
 HAVE___UINT64_T_IN_SGIDEFS_H)
 
 ac_try_compile("
-#include <elf.h>
+#include ${LOCATION_OF_LIBELFHEADER}
 int main()
 {
     Elf64_Rela p; p.r_offset = 1;
@@ -192,7 +172,7 @@ int main()
 HAVE_ELF64_RELA)
 
 ac_try_compile("
-#include <elf.h>
+#include ${LOCATION_OF_LIBELFHEADER}
 int main()
 {
     Elf64_Sym p; p.st_info = 1;

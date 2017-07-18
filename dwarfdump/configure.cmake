@@ -89,7 +89,7 @@ int main(void) {
     return 0;
 }" 
 HAVE_UNUSED_ATTRIBUTE)
-message("Checking if __attribute__ unused compiles ok... ${HAVE_UNUSED_ATTRIBUTE}")
+message(STATUS "Checking if __attribute__ unused compiles ok... ${HAVE_UNUSED_ATTRIBUTE}")
 
 ac_try_compile([=[
 #include "zlib.h"
