@@ -89,8 +89,15 @@ HAVE_ZLIB)
 message(STATUS "Checking zlib.h usability... ${HAVE_ZLIB}")
 set(dwfzlib $<$<BOOL:${HAVE_ZIB}>:"z")
 
+#  The following are for FreeBSD and others which
+#  use struct _Elf as the actual struct type.
+if(HAVE_LIBELF_H)
+    set(_Elf_HEADER "<libelf.h>")
+else()
+    set(_Elf_HEADER "<libelf/libelf.h>")
+endif()
 ac_try_compile("
-#include ${HAVE_LOCATION_OF_LIBELFHEADER}
+#include ${_Elf_HEADER}
 struct _Elf; 
 typedef struct _Elf Elf;
 int main()
