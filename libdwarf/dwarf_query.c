@@ -1,7 +1,7 @@
 /*
 
   Copyright (C) 2000,2002,2004 Silicon Graphics, Inc.  All Rights Reserved.
-  Portions Copyright (C) 2007-2016 David Anderson. All Rights Reserved.
+  Portions Copyright (C) 2007-2017 David Anderson. All Rights Reserved.
   Portions Copyright 2012 SN Systems Ltd. All rights reserved.
 
   This program is free software; you can redistribute it and/or modify it
@@ -58,6 +58,22 @@ int dwarf_get_offset_size(Dwarf_Debug dbg,
     *offset_size = dbg->de_length_size;
     return DW_DLV_OK;
 }
+
+#if 0
+static void
+dump_bytes(char * msg,Dwarf_Small * start, long len)
+{
+    Dwarf_Small *end = start + len;
+    Dwarf_Small *cur = start;
+
+    printf("%s ",msg);
+    for (; cur < end; cur++) {
+        printf("%02x ", *cur);
+    }
+    printf("\n");
+}
+#endif
+
 
 
 /* This is normally reliable.
@@ -361,7 +377,7 @@ dwarf_attrlist(Dwarf_Die die,
                 (Dwarf_Attribute) _dwarf_get_alloc(dbg, DW_DLA_ATTR, 1);
             if (new_attr == NULL) {
                 _dwarf_error(dbg, error, DW_DLE_ALLOC_FAIL);
-                return (DW_DLV_ERROR);
+                return DW_DLV_ERROR;
             }
 
             new_attr->ar_attribute = attr;
@@ -375,9 +391,13 @@ dwarf_attrlist(Dwarf_Die die,
                 attr_form = (Dwarf_Half) utmp6;
                 new_attr->ar_attribute_form = attr_form;
             }
+            /*  Here the final address must be *inside* the section, as we
+                will read from there, and read at least one byte, we think.
+                We do not want info_ptr to point past end so we add 1 to
+                the end-pointer.  */
             if (_dwarf_reference_outside_section(die,
                 (Dwarf_Small*) info_ptr,
-                (Dwarf_Small*) info_ptr)) {
+                ((Dwarf_Small*) info_ptr )+1)) {
                 _dwarf_error(dbg, error,DW_DLE_ATTR_OUTSIDE_SECTION);
                 return DW_DLV_ERROR;
             }
@@ -487,6 +507,7 @@ _dwarf_get_value_ptr(Dwarf_Die die,
     abbrev_end = _dwarf_calculate_abbrev_section_end_ptr(context);
 
     info_ptr = die->di_debug_ptr;
+    /* This ensures and checks die_info_end >= info_ptr */
     SKIP_LEB128_WORD_CK(info_ptr,dbg,error,die_info_end);
 
     do {
@@ -524,11 +545,17 @@ _dwarf_get_value_ptr(Dwarf_Die die,
         if (res != DW_DLV_OK) {
             return res;
         }
-        if ((info_ptr + value_size) > die_info_end) {
-            /*  Something badly wrong. We point past end
-                of debug_info or debug_types . */
-            _dwarf_error(dbg,error,DW_DLE_DIE_ABBREV_BAD);
-            return DW_DLV_ERROR;
+        {
+            /* ptrdiff_t is signed type, so use DW signed type */
+            Dwarf_Signed len = die_info_end - info_ptr;
+            if (len < 0 || (value_size > ((Dwarf_Unsigned)len))) {
+                /*  Something badly wrong. We point past end
+                    of debug_info or debug_types or a
+                    section is unreasonably sized or we are
+                    pointing to two different sections? */
+                _dwarf_error(dbg,error,DW_DLE_DIE_ABBREV_BAD);
+                return DW_DLV_ERROR;
+            }
         }
         info_ptr+= value_size;
     } while (curr_attr != 0 || curr_attr_form != 0);
@@ -679,7 +706,7 @@ _dwarf_extract_address_from_debug_addr(Dwarf_Debug dbg,
         but with a base. */
     sectionsize = dbg->de_debug_addr.dss_size;
     sectionend = sectionstart + sectionsize;
-    if ((addr_offset + context->cc_address_size) > sectionsize) {
+    if (addr_offset > (sectionsize - context->cc_address_size)) {
         _dwarf_error(dbg, error, DW_DLE_ATTR_FORM_SIZE_BAD);
         return (DW_DLV_ERROR);
     }
@@ -884,6 +911,7 @@ dwarf_dietype_offset(Dwarf_Die die,
     res = dwarf_attr(die,DW_AT_type,&attr,error);
     if (res == DW_DLV_OK) {
         res = dwarf_global_formref(attr,&offset,error);
+        dwarf_dealloc(die->di_cu_context->cc_dbg,attr,DW_DLA_ATTR);
     }
     *return_off = offset;
     return res;
@@ -1785,7 +1813,3 @@ _dwarf_calculate_abbrev_section_end_ptr(Dwarf_CU_Context context)
     abbrev_end = abbrev_start + sec->dss_size;
     return abbrev_end;
 }
-
-
-
-

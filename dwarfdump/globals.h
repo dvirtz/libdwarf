@@ -135,14 +135,6 @@ typedef struct {
     int errors;
 } Dwarf_Check_Result;
 
-extern boolean do_check_dwarf;
-extern boolean do_print_dwarf;
-
-extern boolean record_dwarf_error;   /* A test has failed, this
-  is normally set FALSE shortly after being set TRUE, it is
-  a short-range hint we should print something we might not
-  otherwise print (under the circumstances). */
-
 /* Compilation Unit information for improved error messages.
    If the strings are too short we just truncate so fixed length
    here is fine.  */
@@ -179,24 +171,13 @@ extern Dwarf_Addr CU_base_address;          /* CU Base address. See ranges. */
 extern Dwarf_Addr CU_low_address;           /* CU lowest addr. */
 extern Dwarf_Addr CU_high_address;          /* CU High address. */
 
-
 extern int current_section_id;              /* Section being process. */
-
 
 /*  Ranges and Location tables for better error checking: see
     dwarfdump.c comments for more information. */
 extern Bucket_Group *pRangesInfo;
 extern Bucket_Group *pLinkonceInfo;
 extern Bucket_Group *pVisitedInfo;
-
-/*  Display parent/children when in wide format. */
-extern boolean display_parent_tree;
-extern boolean display_children_tree;
-extern int stop_indent_level;
-
-/*  Print search results when in wide format. */
-extern boolean search_wide_format;
-extern boolean search_is_on;
 
 /* Calculate wasted space */
 extern void calculate_attributes_usage(Dwarf_Half attr,Dwarf_Half theform,
@@ -248,54 +229,18 @@ extern int nTrace[MAX_TRACE_LEVEL + 1];
 #define DEBUG_GDB_INDEX   15
 #define DEBUG_FRAME_EH_GNU 16
 #define DEBUG_MACRO       17
+#define DEBUG_NAMES       18
 
 extern int verbose;
 extern boolean dense;
 extern boolean ellipsis;
 extern boolean use_mips_regnames;
-extern boolean show_global_offsets;
 extern boolean show_form_used;
-extern boolean display_offsets;
 
-extern boolean check_pubname_attr;
-extern boolean check_attr_tag;
-extern boolean check_tag_tree;
-extern boolean check_type_offset;
-extern boolean check_macros;
-extern boolean check_decl_file;
-extern boolean check_lines;
-extern boolean check_ranges;       /* Ranges (aranges & ranges) check */
-extern boolean check_fdes;
-extern boolean check_aranges;
-extern boolean check_harmless;
-extern boolean check_abbreviations;
-extern boolean check_dwarf_constants;
-extern boolean check_di_gaps;
-extern boolean check_forward_decl;
-extern boolean check_self_references;
-extern boolean check_attr_encoding;   /* Attributes encoding */
-extern boolean suppress_nested_name_search;
-extern boolean suppress_check_extensions_tables;
-extern boolean check_duplicated_attributes;
-/* lots of checks make no sense on a dwp debugfission object. */
-extern boolean suppress_checking_on_dwp;
-
-/* Print global (unique) error messages */
-extern boolean print_unique_errors;
-extern boolean found_error_message;
 /* Print the information only if unique errors is set and it is first time */
-#define PRINTING_UNIQUE (!found_error_message)
+#define PRINTING_UNIQUE (!glflags.gf_found_error_message)
 
 extern int break_after_n_units;
-
-extern boolean check_names;          /* Check for invalid names */
-extern boolean check_verbose_mode;   /* During '-k' mode, display errors */
-extern boolean check_frames;         /* Frames check */
-extern boolean check_frames_extended;/* Extensive frames check */
-extern boolean check_locations;      /* Location list check */
-
-extern boolean print_usage_tag_attr;      /* Print tag-attr basic usage */
-extern boolean print_usage_tag_attr_full; /* Print tag-attr full usage */
 
 /* Check categories corresponding to the -k option */
 typedef enum /* Dwarf_Check_Categories */ {
@@ -356,30 +301,19 @@ struct section_high_offsets_s {
 };
 extern struct section_high_offsets_s section_high_offsets_global;
 
-
-extern boolean info_flag;
 enum line_flag_type_e {
   singledw5,   /* Meaning choose single table DWARF5 new interfaces. */
   s2l,   /* Meaning choose two-level DWARF5 new interfaces. */
   orig,  /* Meaning choose DWARF2,3,4 single level interface. */
   orig2l /* Meaning choose DWARF 2,3,4 two-level interface. */
 };
-extern enum line_flag_type_e line_flag_selection;
-extern boolean line_flag;
-extern boolean line_skeleton_flag;
-extern boolean line_print_pc;        /* Print <pc> addresses. */
-extern boolean use_old_dwarf_loclist;
-extern boolean producer_children_flag;   /* List of CUs per compiler */
 
-extern boolean macro_flag; /* DWARF5.  And DWARF4 macro extension */
-extern boolean macinfo_flag; /* DWARF2,3,4. */
+#include "glflags.h"
 
 /* tsearch tree used in macro checking. */
 extern void *  macro_check_tree; /* DWARF5 macros. */
 extern void *  macinfo_check_tree; /* DWARF2,3,4 macros */
 
-extern char cu_name[ ];
-extern boolean cu_name_flag;
 extern Dwarf_Off fde_offset_for_cu_low;
 extern Dwarf_Off fde_offset_for_cu_high;
 
@@ -405,13 +339,14 @@ extern void print_locs (Dwarf_Debug dbg);
 extern void print_abbrevs (Dwarf_Debug dbg);
 extern void print_strings (Dwarf_Debug dbg);
 extern void print_aranges (Dwarf_Debug dbg);
-extern void print_relocinfo (Dwarf_Debug dbg,unsigned reloc_map);
+extern void print_relocinfo (Dwarf_Debug dbg,char *relmap);
 extern void print_static_funcs(Dwarf_Debug dbg);
 extern void print_static_vars(Dwarf_Debug dbg);
 enum type_type_e {SGI_TYPENAME, DWARF_PUBTYPES} ;
 extern void print_types(Dwarf_Debug dbg,enum type_type_e type_type);
 extern void print_weaknames(Dwarf_Debug dbg);
 extern void print_exception_tables(Dwarf_Debug dbg);
+extern void print_debug_names(Dwarf_Debug dbg);
 
 /*  Space used to record range information */
 extern void allocate_range_array_info(void);
@@ -547,39 +482,12 @@ void print_attributes_encoding(Dwarf_Debug dbg);
 /* Detailed tag and attributes usage */
 void print_tag_attributes_usage(Dwarf_Debug dbg);
 
+void print_section_groups_data(Dwarf_Debug dbg);
+void update_section_flags_per_groups(Dwarf_Debug dbg);
+
 void print_any_harmless_errors(Dwarf_Debug dbg);
 
-/* Definitions for printing relocations. */
-#define DW_SECTION_REL_DEBUG_INFO     0
-#define DW_SECTION_REL_DEBUG_LINE     1
-#define DW_SECTION_REL_DEBUG_PUBNAMES 2
-#define DW_SECTION_REL_DEBUG_ABBREV   3
-#define DW_SECTION_REL_DEBUG_ARANGES  4
-#define DW_SECTION_REL_DEBUG_FRAME    5
-#define DW_SECTION_REL_DEBUG_LOC      6
-#define DW_SECTION_REL_DEBUG_RANGES   7
-#define DW_SECTION_REL_DEBUG_TYPES    8
-#define DW_MASK_PRINT_ALL             0x00ff
-
-/* Definitions for printing sections. */
-#define DW_HDR_DEBUG_INFO     0x00000001   /*  0 */
-#define DW_HDR_DEBUG_LINE     0x00000002   /*  1 */
-#define DW_HDR_DEBUG_PUBNAMES 0x00000004   /*  2 */
-#define DW_HDR_DEBUG_ABBREV   0x00000008   /*  3 */ /* 0x000f */
-#define DW_HDR_DEBUG_ARANGES  0x00000010   /*  4 */
-#define DW_HDR_DEBUG_FRAME    0x00000020   /*  5 */
-#define DW_HDR_DEBUG_LOC      0x00000040   /*  6 */
-#define DW_HDR_DEBUG_RANGES   0x00000080   /*  7 */ /* 0x00ff */
-#define DW_HDR_DEBUG_STRING   0x00000100   /*  8 */
-#define DW_HDR_DEBUG_PUBTYPES 0x00000200   /*  9 */
-#define DW_HDR_DEBUG_TYPES    0x00000400   /* 10 */
-#define DW_HDR_TEXT           0x00000800   /* 11 */ /* 0x0fff */
-#define DW_HDR_HEADER         0x00001000   /* 12 */
-#define DW_HDR_GDB_INDEX      0x00002000   /* 13 */
-
-/* Mask to indicate all sections (by default) */
-#define DW_HDR_ALL            0x80000000
-#define DW_HDR_DEFAULT        0x00002fff
+#include "section_bitmaps.h"
 
 #ifdef HAVE_UNUSED_ATTRIBUTE
 #define  UNUSEDARG __attribute__ ((unused))

@@ -5,11 +5,11 @@ ac_check_headers(alloca.h elf.h elfaccess.h libelf.h libelf/libelf.h  sys/types.
 
 # Find out where the elf header is.
 if(HAVE_ELF_H)
-    set(LOCATION_OF_LIBELFHEADER "<elf.h>")
+    set(HAVE_LOCATION_OF_LIBELFHEADER "<elf.h>")
 elseif(HAVE_LIBELF_H)
-    set(LOCATION_OF_LIBELFHEADER "<libelf.h>")
+    set(HAVE_LOCATION_OF_LIBELFHEADER "<libelf.h>")
 elseif(HAVE_LIBELF_LIBELF_H)
-    set(LOCATION_OF_LIBELFHEADER "<libelf/libelf.h>")
+    set(HAVE_LOCATION_OF_LIBELFHEADER "<libelf/libelf.h>")
 endif()
 
 #  The default libdwarf is the one with struct Elf
@@ -89,15 +89,8 @@ HAVE_ZLIB)
 message(STATUS "Checking zlib.h usability... ${HAVE_ZLIB}")
 set(dwfzlib $<$<BOOL:${HAVE_ZIB}>:"z")
 
-#  The following are for FreeBSD and others which
-#  use struct _Elf as the actual struct type.
-if(HAVE_LIBELF_H)
-    set(_Elf_HEADER "<libelf.h>")
-else()
-    set(_Elf_HEADER "<libelf/libelf.h>")
-endif()
 ac_try_compile("
-#include ${_Elf_HEADER}
+#include ${HAVE_LOCATION_OF_LIBELFHEADER}
 struct _Elf; 
 typedef struct _Elf Elf;
 int main()
@@ -118,7 +111,7 @@ endif()
 #  checking for ia 64 types, which might be enums, using HAVE_R_IA_64_DIR32LSB
 #  to stand in for a small set.
 ac_try_compile("
-#include ${LOCATION_OF_LIBELFHEADER}
+#include ${HAVE_LOCATION_OF_LIBELFHEADER}
 int main()
 {
     int p; p = R_IA_64_DIR32LSB;
@@ -127,7 +120,7 @@ int main()
 HAVE_R_IA_64_DIR32LSB)
 
 ac_try_compile("
-#include <libelf.h>
+#include ${HAVE_LOCATION_OF_LIBELFHEADER}
 int main()
 {
     int p; p = 0;
@@ -137,7 +130,7 @@ HAVE_RAW_LIBELF_OK)
 
 ac_try_compile("
 #define _GNU_SOURCE
-#include ${LOCATION_OF_LIBELFHEADER}
+#include ${HAVE_LOCATION_OF_LIBELFHEADER}
 int main()
 {
     off64_t  p; p = 0;
@@ -168,7 +161,7 @@ int main()
 HAVE___UINT64_T_IN_SGIDEFS_H)
 
 ac_try_compile("
-#include ${LOCATION_OF_LIBELFHEADER}
+#include ${HAVE_LOCATION_OF_LIBELFHEADER}
 int main()
 {
     Elf64_Rela p; p.r_offset = 1;
@@ -177,7 +170,7 @@ int main()
 HAVE_ELF64_RELA)
 
 ac_try_compile("
-#include ${LOCATION_OF_LIBELFHEADER}
+#include ${HAVE_LOCATION_OF_LIBELFHEADER}
 int main()
 {
     Elf64_Sym p; p.st_info = 1;

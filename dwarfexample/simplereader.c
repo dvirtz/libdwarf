@@ -971,7 +971,7 @@ printnamestrings(Dwarf_Debug dbg, Dwarf_Die die)
     Dwarf_Error error =0;
     Dwarf_Attribute *atlist = 0;
     Dwarf_Signed atcount = 0;
-	Dwarf_Signed i = 0;
+    Dwarf_Signed i = 0;
     int res = 0;
 
     res = dwarf_attrlist(die,&atlist, &atcount,&error);

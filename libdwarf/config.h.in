@@ -40,6 +40,9 @@
 /* Define 1 if off64 is defined via libelf with GNU_SOURCE. */
 #undef HAVE_LIBELF_OFF64_OK
 
+/* Define to header that first defines elf. */
+#undef HAVE_LOCATION_OF_LIBELFHEADER
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
@@ -79,6 +82,15 @@
 /* Define 1 if libelf.h defines struct _Elf */
 #undef HAVE_STRUCT_UNDERSCORE_ELF
 
+/* Define to 1 if you have the <sys/elf_386.h> header file. */
+#undef HAVE_SYS_ELF_386_H
+
+/* Define to 1 if you have the <sys/elf_amd64.h> header file. */
+#undef HAVE_SYS_ELF_AMD64_H
+
+/* Define to 1 if you have the <sys/elf_SPARC.h> header file. */
+#undef HAVE_SYS_ELF_SPARC_H
+
 /* Define to 1 if you have the <sys/ia64/elf.h> header file. */
 #undef HAVE_SYS_IA64_ELF_H
 
@@ -112,7 +124,7 @@
 /* See if __uint64_t is predefined in the compiler. */
 #undef HAVE___UINT64_T
 
-/* Define 1 if is in sgidefs.h. */
+/* Define 1 if __uint64_t is in sgidefs.h. */
 #undef HAVE___UINT64_T_IN_SGIDEFS_H
 
 /* Define 1 if sys/types.h defines __uint64_t. */

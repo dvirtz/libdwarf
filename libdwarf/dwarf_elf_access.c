@@ -2,7 +2,7 @@
   Copyright (C) 2000-2005 Silicon Graphics, Inc.  All Rights Reserved.
   Portions Copyright 2007-2010 Sun Microsystems, Inc. All rights reserved.
   Portions Copyright 2008-2010 Arxan Technologies, Inc. All Rights Reserved.
-  Portions Copyright 2009-2012 David Anderson. All rights reserved.
+  Portions Copyright 2009-2017 David Anderson. All rights reserved.
   Portions Copyright 2009-2010 Novell Inc. All rights reserved.
   Portions Copyright 2012 SN Systems Ltd. All rights reserved.
 
@@ -39,11 +39,23 @@
 #include "dwarf_reloc_ppc.h"
 #include "dwarf_reloc_ppc64.h"
 #include "dwarf_reloc_x86_64.h"
+#include "dwarf_reloc_386.h"
 #endif /* _WIN32 */
 
 #ifdef HAVE_ELF_H
 #include <elf.h>
+/* Relocation definitions are in sys/elf_{mach}.h on Solaris.  */
+#ifdef HAVE_SYS_ELF_AMD64_H
+#include <sys/elf_amd64.h>
 #endif
+#ifdef HAVE_SYS_ELF_386_H
+#include <sys/elf_386.h>
+#endif
+#ifdef HAVE_SYS_ELF_SPARC_H
+#include <sys/elf_SPARC.h>
+#endif
+#endif
+
 #ifdef HAVE_LIBELF_H
 #include <libelf.h>
 #else
@@ -381,7 +393,7 @@ _dwarf_get_elf_flags_func(
 
     If writing a function vaguely like this for a non-elf object,
     be sure that when section-index is passed in as zero that
-    you set the fields in *ret_scn to reflect an empty section
+    you set the fields in *ret_scn_doas to reflect an empty section
     with an empty string as the section name.  Adjust your
     section indexes of your non-elf-reading-code
     for all the necessary functions in Dwarf_Obj_Access_Methods_s
@@ -396,7 +408,7 @@ int
 dwarf_elf_object_access_get_section_info(
     void* obj_in,
     Dwarf_Half section_index,
-    Dwarf_Obj_Access_Section* ret_scn,
+    Dwarf_Obj_Access_Section* ret_scn_doas,
     int* error)
 {
     dwarf_elf_object_access_internals_t*obj =
@@ -425,15 +437,15 @@ dwarf_elf_object_access_get_section_info(
 
         /*  Get also section 'sh_type' and sh_info' fields, so the caller
             can use it for additional tasks that require that info. */
-        ret_scn->type = shdr64->sh_type;
-        ret_scn->size = shdr64->sh_size;
-        ret_scn->addr = shdr64->sh_addr;
-        ret_scn->link = shdr64->sh_link;
-        ret_scn->info = shdr64->sh_info;
-        ret_scn->entrysize = shdr64->sh_entsize;
-        ret_scn->name = elf_strptr(obj->elf, obj->ehdr64->e_shstrndx,
+        ret_scn_doas->type = shdr64->sh_type;
+        ret_scn_doas->size = shdr64->sh_size;
+        ret_scn_doas->addr = shdr64->sh_addr;
+        ret_scn_doas->link = shdr64->sh_link;
+        ret_scn_doas->info = shdr64->sh_info;
+        ret_scn_doas->entrysize = shdr64->sh_entsize;
+        ret_scn_doas->name = elf_strptr(obj->elf, obj->ehdr64->e_shstrndx,
             shdr64->sh_name);
-        if (ret_scn->name == NULL) {
+        if (ret_scn_doas->name == NULL) {
             *error = DW_DLE_ELF_STRPTR_ERROR;
             return DW_DLV_ERROR;
         }
@@ -450,15 +462,15 @@ dwarf_elf_object_access_get_section_info(
 
     /*  Get also the section type, so the caller can use it for
         additional tasks that require to know the section type. */
-    ret_scn->type = shdr32->sh_type;
-    ret_scn->size = shdr32->sh_size;
-    ret_scn->addr = shdr32->sh_addr;
-    ret_scn->link = shdr32->sh_link;
-    ret_scn->info = shdr32->sh_info;
-    ret_scn->entrysize = shdr32->sh_entsize;
-    ret_scn->name = elf_strptr(obj->elf, obj->ehdr32->e_shstrndx,
+    ret_scn_doas->type = shdr32->sh_type;
+    ret_scn_doas->size = shdr32->sh_size;
+    ret_scn_doas->addr = shdr32->sh_addr;
+    ret_scn_doas->link = shdr32->sh_link;
+    ret_scn_doas->info = shdr32->sh_info;
+    ret_scn_doas->entrysize = shdr32->sh_entsize;
+    ret_scn_doas->name = elf_strptr(obj->elf, obj->ehdr32->e_shstrndx,
         shdr32->sh_name);
-    if (ret_scn->name == NULL) {
+    if (ret_scn_doas->name == NULL) {
         *error = DW_DLE_ELF_STRPTR_ERROR;
         return DW_DLV_ERROR;
     }
@@ -511,6 +523,11 @@ find_section_to_relocate(Dwarf_Debug dbg,Dwarf_Half section_index,
     MATCH_REL_SEC(section_index,dbg->de_debug_varnames,relocatablesec);
     MATCH_REL_SEC(section_index,dbg->de_debug_weaknames,relocatablesec);
     MATCH_REL_SEC(section_index,dbg->de_debug_types,relocatablesec);
+    MATCH_REL_SEC(section_index,dbg->de_debug_macro,relocatablesec);
+    MATCH_REL_SEC(section_index,dbg->de_debug_rnglists,relocatablesec);
+    MATCH_REL_SEC(section_index,dbg->de_debug_loclists,relocatablesec);
+    MATCH_REL_SEC(section_index,dbg->de_debug_aranges,relocatablesec);
+    MATCH_REL_SEC(section_index,dbg->de_debug_sup,relocatablesec);
     /* dbg-> de_debug_tu_index,reloctablesec); */
     /* dbg-> de_debug_cu_index,reloctablesec); */
     /* dbg-> de_debug_gdbindex,reloctablesec); */
@@ -696,7 +713,14 @@ is_32bit_abs_reloc(unsigned int type, Dwarf_Half machine)
 #endif /* MIPS case */
 #if defined(EM_SPARC32PLUS)  && defined (R_SPARC_UA32)
     case EM_SPARC32PLUS:
-        r =  (type == R_SPARC_UA32);
+        r = (0
+#if defined(R_SPARC_UA32)
+            | (type == R_SPARC_UA32)
+#endif
+#if defined(R_SPARC_TLS_DTPOFF32)
+            | (type == R_SPARC_TLS_DTPOFF32)
+#endif
+            );
         break;
 #endif
 #if defined(EM_SPARCV9)  && defined (R_SPARC_UA32)
@@ -830,7 +854,7 @@ is_32bit_abs_reloc(unsigned int type, Dwarf_Half machine)
         break;
 #endif /* EM_S390 */
 
-#if defined(EM_X86_64) && defined (R_X86_64_32)
+#if defined(EM_X86_64) && ( defined(R_X86_64_32) || defined(R_X86_64_PC32) || defined(R_X86_64_DTPOFF32) )
 #if defined(EM_K10M)
     case EM_K10M:
 #endif
@@ -839,6 +863,9 @@ is_32bit_abs_reloc(unsigned int type, Dwarf_Half machine)
 #endif
     case EM_X86_64:
         r = (0
+#if defined (R_X86_64_PC32)
+            | (type == R_X86_64_PC32)
+#endif
 #if defined (R_X86_64_32)
             | (type == R_X86_64_32)
 #endif
@@ -1280,7 +1307,12 @@ dwarf_elf_object_relocate_a_section(void* obj_in,
 
 /*  dwarf_elf_object_access_load_section()
     We are only asked to load sections that
-    libdwarf really needs. */
+    libdwarf really needs.
+    It would be much better if a 'user data pointer'
+    were passed through these interfaces so one
+    part of libdwarf could pass through to this.
+    Or even just if a Dwarf_Debug were passed in.
+    Sigh. */
 static int
 dwarf_elf_object_access_load_section(void* obj_in,
     Dwarf_Half section_index,

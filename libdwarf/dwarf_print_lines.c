@@ -1,6 +1,6 @@
 /*
   Copyright (C) 2000,2002,2004,2005,2006 Silicon Graphics, Inc.  All Rights Reserved.
-  Portions Copyright (C) 2007-2013 David Anderson. All Rights Reserved.
+  Portions Copyright (C) 2007-2017 David Anderson. All Rights Reserved.
   Portions Copyright 2012 SN Systems Ltd. All rights reserved.
 
   This program is free software; you can redistribute it and/or modify it
@@ -169,6 +169,7 @@ print_line_detail(
 
 #include "dwarf_line_table_reader_common.c"
 
+/* Not yet implemented, at least not usefully. FIXME */
 void
 _dwarf_print_line_context_record(UNUSEDARG Dwarf_Debug dbg,
     UNUSEDARG Dwarf_Line_Context line_context)

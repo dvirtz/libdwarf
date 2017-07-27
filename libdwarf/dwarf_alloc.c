@@ -52,6 +52,7 @@
 #include "dwarf_gdbindex.h"
 #include "dwarf_xu_index.h"
 #include "dwarf_macro5.h"
+#include "dwarf_dnames.h"
 #include "dwarf_dsc.h"
 
 #define TRUE 1
@@ -269,6 +270,9 @@ struct ial_s alloc_instance_basics[ALLOC_AREA_INDEX_TABLE_MAX] = {
     /* 62 DW_DLA_DSC_HEAD 0x3e */
     {sizeof(struct Dwarf_Dsc_Head_s),MULTIPLY_NO, 0,
         _dwarf_dsc_destructor},
+    /* 63 DW_DLA_DNAMES_HEAD 0x3f */
+    {sizeof(struct Dwarf_Dnames_Head_s),MULTIPLY_NO, 0,
+        _dwarf_debugnames_destructor},
 };
 
 /*  We are simply using the incoming pointer as the key-pointer.
@@ -679,6 +683,7 @@ _dwarf_free_all_of_one_debug(Dwarf_Debug dbg)
         free(dbg->de_printf_callback.dp_buffer);
     }
 
+    _dwarf_destroy_group_map(dbg);
     dwarf_tdestroy(dbg->de_alloc_tree,tdestroy_free_node);
     dbg->de_alloc_tree = 0;
     if (dbg->de_tied_data.td_tied_search) {

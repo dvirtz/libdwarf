@@ -1,7 +1,7 @@
 /*
 
   Copyright (C) 2000-2005 Silicon Graphics, Inc.  All Rights Reserved.
-  Portions Copyright (C) 2007-2013 David Anderson. All Rights Reserved.
+  Portions Copyright (C) 2007-2017 David Anderson. All Rights Reserved.
   Portions Copyright (C) 2008-2010 Arxan Technologies, Inc. All Rights Reserved.
 
   This program is free software; you can redistribute it and/or modify it
@@ -175,19 +175,23 @@ struct Dwarf_CU_Context_s {
     Dwarf_Unsigned cc_debug_offset;
 
     /*  cc_signature is in the TU header
-        of a type unit of a TU DIE.
+        of a type unit of a TU DIE (or for DW5 in the
+        skeleton or split_compile header is a dwo_id).
         Ignore this field if cc_signature_present is zero.
 
         If cc_unit_type == DW_UT_compile or DW_UT_partial
-            the signature is a CU signature.
-        If cc_unit_type == DW_UT_type
+            the signature is a CU signature (dwo_id).
+        Some early DW5 drafts encouraged DWARF4 output
+            of some compilers to include dwo_id, but
+            in a messier way(lacking DW_UT_*).
+        If cc_unit_type == DW_UT_type or DW_UT_split_type
             the signature is a type signature. */
     Dwarf_Sig8  cc_type_signature;
 
-    /*  cc_typeoffsets contains the
+    /*  cc_type_signature_offset contains the
         section-local DIE offset of the type
         the signature applies to if the cc_unit_type
-        is DW_UT_type.  */
+        is DW_UT_type or DW_UT_split_type. */
     Dwarf_Unsigned cc_type_signature_offset;
 
     /*  For each CU and each TU
@@ -266,10 +270,6 @@ struct Dwarf_CU_Context_s {
         For DWARF 2,3,4 this is filled in initially
         from the CU header and refined by inspecting the TAG
         of the CU DIE to detect DW_UT_partial is applicable.  */
-
-    /*  If non-zero is the DW_AT_comp_dir string from
-        the DWARF data. Do not free. */
-    const char *  cc_at_comp_dir;
 };
 
 /*  Consolidates section-specific data in one place.
@@ -297,6 +297,13 @@ struct Dwarf_Section_s {
     /*  is_in_use set during initial object reading to
         detect duplicates. Ignored after setup done. */
     Dwarf_Small    dss_is_in_use;
+
+    /*  When loading COMDAT they refer (sometimes) to
+        base sections, so we need to have the BASE
+        group sections filled in when the corresponding is
+        not in the COMDAT group list.  .debug_abbrev is
+        an example. */
+    Dwarf_Word     dss_group_number;
 
     /*  If this is zdebug, to start  data/size are the
         raw section bytes.
@@ -409,6 +416,7 @@ struct Dwarf_dbg_sect_s {
         (or the like) of the dbg struct.  */
     struct Dwarf_Section_s *ds_secdata;
 
+    unsigned ds_groupnumber;
     int ds_duperr;                     /* Error code for duplicated section */
     int ds_emptyerr;                   /* Error code for empty section */
     int ds_have_dwarf;                 /* Section contains DWARF */
@@ -423,7 +431,6 @@ struct Dwarf_dbg_sect_s {
     for which many .debug_info (and other) sections may exist.
 */
 #define DWARF_MAX_DEBUG_SECTIONS 50
-
 
 
 /*  These offsets and sizes (Dwarf_Fission*) are
@@ -527,6 +534,24 @@ struct Dwarf_Tied_Data_s {
 
 };
 
+/*  dg_groupnum 0 does not exist.
+    dg_groupnum 1 is base
+    dg_groupnum 2 is dwo
+    dg_groupnum 3 and higher are COMDAT groups (if any).
+  */
+struct Dwarf_Group_Data_s {
+    /* For traditional DWARF the value is one, just one group. */
+    unsigned gd_number_of_groups;
+
+    /* Raw elf (elf-like) section count. */
+    unsigned gd_number_of_sections;
+
+    unsigned gd_map_entry_count;
+
+    /* A map from section number to group number. */
+    void *gd_map;
+};
+
 struct Dwarf_Debug_s {
     /*  All file access methods and support data
         are hidden in this structure.
@@ -540,8 +565,17 @@ struct Dwarf_Debug_s {
     struct Dwarf_Debug_InfoTypes_s de_info_reading;
     struct Dwarf_Debug_InfoTypes_s de_types_reading;
 
+    /*  DW_GROUPNUMBER_ANY, DW_GROUPNUMBER_BASE, DW_GROUPNUMBER_DWO,
+        or a comdat group number > 2
+        Selected at init time of this dbg based on
+        user request and on data in the object. */
+    unsigned de_groupnumber;
+
+    /* Supporting data for groupnumbers. */
+    struct Dwarf_Group_Data_s de_groupnumbers;
+
     /*  Number of bytes in the length, and offset field in various
-        .debug_* sections.  It's not very meaningful, and is
+        .debu* sections.  It's not very meaningful, and is
         only used in one 'approximate' calculation.
         de_offset_size would be a more appropos name. */
     Dwarf_Small de_length_size;
@@ -780,6 +814,33 @@ _dwarf_search_for_signature(Dwarf_Debug dbg,
 
 
 void _dwarf_tied_destroy_free_node(void *node);
+void _dwarf_destroy_group_map(Dwarf_Debug dbg);
+
+int _dwarf_section_get_target_group(Dwarf_Debug dbg,
+    unsigned   obj_section_index,
+    unsigned * groupnumber,
+    Dwarf_Error    * error);
+
+int _dwarf_dwo_groupnumber_given_name(
+    const char *name,
+    unsigned *grpnum_out);
+
+int _dwarf_section_get_target_group_from_map(Dwarf_Debug dbg,
+    unsigned   obj_section_index,
+    unsigned * groupnumber_out,
+    UNUSEDARG Dwarf_Error    * error);
+
+int _dwarf_insert_in_group_map(Dwarf_Debug dbg,
+    unsigned groupnum,
+    unsigned section_index,
+    const char *name,
+    Dwarf_Error * error);
+
+/* returns TRUE/FALSE: meaning this section name is in
+   map for this groupnum  or not.*/
+int _dwarf_section_in_group_by_name(Dwarf_Debug dbg,
+    const char * scn_name,
+    unsigned groupnum);
 
 int
 _dwarf_next_cu_header_internal(Dwarf_Debug dbg,
@@ -833,6 +894,15 @@ typedef int (*_dwarf_get_elf_flags_func_ptr_type)(
     Dwarf_Unsigned *addralign_out,
     int *error);
 extern _dwarf_get_elf_flags_func_ptr_type _dwarf_get_elf_flags_func_ptr;
+
+extern Dwarf_Bool _dwarf_allow_formudata(unsigned form);
+extern int _dwarf_formudata_internal(Dwarf_Debug dbg,
+    unsigned form,
+    Dwarf_Byte_Ptr data,
+    Dwarf_Byte_Ptr section_end,
+    Dwarf_Unsigned *return_uval,
+    Dwarf_Unsigned *bytes_read,
+    Dwarf_Error *error);
 
 Dwarf_Byte_Ptr _dwarf_calculate_info_section_start_ptr(Dwarf_CU_Context context, Dwarf_Unsigned *section_len_out);
 

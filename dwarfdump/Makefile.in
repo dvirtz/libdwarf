@@ -52,12 +52,14 @@ FINALOBJECTS = \
 	dwarfdump.o \
 	dwconf.o \
 	esb.o \
+        glflags.o \
         helpertree.o \
         macrocheck.o \
 	print_abbrevs.o \
 	print_aranges.o \
 	print_debugfission.o \
 	print_die.o \
+	print_dnames.o \
 	print_frames.o  \
 	print_gdbindex.o  \
 	print_lines.o \
@@ -68,14 +70,16 @@ FINALOBJECTS = \
 	print_ranges.o \
 	print_reloc.o \
 	print_sections.o  \
+	print_section_groups.o  \
 	print_static_funcs.o  \
 	print_static_vars.o  \
 	print_strings.o \
 	print_types.o \
 	print_weaknames.o  \
-        sanitized.o \
-        strstrnocase.o \
-        uri.o
+	sanitized.o \
+	section_bitmaps.o \
+	strstrnocase.o \
+	uri.o
 GEN_HFILES = common.o \
 	tmp-tt-table.c \
 	tmp-ta-table.c \
@@ -94,6 +98,7 @@ HEADERS =  $(srcdir)/checkutil.h \
         $(srcdir)/makename.h \
         $(srcdir)/dwarf_tsearch.h \
         $(srcdir)/print_frames.h \
+        $(srcdir)/section_bitmaps.h \
         $(srcdir)/uri.h
 
 $(FINALOBJECTS): $(GEN_HFILES)  $(HEADERS) $(srcdir)/naming.c
@@ -180,12 +185,14 @@ selftest:
 	-rm -f ./selfesb
 	-rm -f ./selfmc
 	-rm -f ./selfmakename
+	-rm -f ./selfsection_bitmaps
+	-rm -f ./selfprint_reloc
 	$(CC) -g -c $(INCLUDES) $(srcdir)/esb.c
 	$(CC) -g -c $(INCLUDES) $(srcdir)/dwarf_tsearchbal.c
 	$(CC) -g -DSELFTEST  $(INCLUDES) $(srcdir)/makename.c dwarf_tsearchbal.o -o selfmakename
 	$(CC) -DSELFTEST $(INCLUDES) -g $(srcdir)/helpertree.c esb.o dwarf_tsearchbal.o -o selfhelpertree
 	./selfhelpertree
-	-rm -f ./selfhelpertree
+	rm -f ./selfhelpertree
 	./selfmakename
 	-rm -f ./selfmakename
 	$(CC) -DSELFTEST $(INCLUDES) -g $(srcdir)/macrocheck.c esb.o dwarf_tsearchbal.o -o selfmc
@@ -193,9 +200,13 @@ selftest:
 	-rm -f ./selfmc
 	$(CC) -DSELFTEST -g $(srcdir)/esb.c -o selfesb
 	./selfesb
-	-rm -f ./selfesb
-        
-
+	rm -f ./selfesb
+	$(CC) -DSELFTEST $(INCLUDES) -g $(srcdir)/section_bitmaps.c -o selfsection_bitmaps
+	./selfsection_bitmaps
+	rm -f ./selfsection_bitmaps
+	$(CC) -DSELFTEST $(INCLUDES) -g $(srcdir)/print_reloc.c esb.o -o selfprint_reloc
+	./selfprint_reloc
+	rm -f ./selfprint_reloc
 
 # This simply assumes that a default INSTALL (cp) command
 # will work and leave sensible permissions on the resulting files.
@@ -233,6 +244,7 @@ clean:
 	rm -f getopttestnat
 	rm -f selfhelpertree
 	rm -f selfmc
+	rm -f *~
 
 distclean: clean
 	rm -f config.log config.h config.cache config.status 

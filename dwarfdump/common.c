@@ -1,6 +1,6 @@
 /*
   Copyright (C) 2008-2010 SN Systems.  All Rights Reserved.
-  Portions Copyright (C) 2008-2016 David Anderson.  All Rights Reserved.
+  Portions Copyright (C) 2008-2017 David Anderson.  All Rights Reserved.
   Portions Copyright (C) 2011-2012 SN Systems Ltd.  .  All Rights Reserved.
 
   This program is free software; you can redistribute it and/or modify it
@@ -34,7 +34,7 @@
 #include "stdafx.h"
 #endif /* HAVE_STDAFX_H */
 
-#define DW_VERSION_DATE_STR " 2016-10-21 09:13:24-07:00  "
+#define DW_VERSION_DATE_STR " 2017-07-09 16:38:09-07:00  "
 #define RELEASE_DATE      "20160307"
 
 /* The Linux/Unix version does not want a version string to print
@@ -56,7 +56,7 @@ print_version_details(UNUSEDARG const char * name,int alwaysprint)
     static char acVersion[64];
     snprintf(acVersion,sizeof(acVersion),
         "[%s %s %s Win%s (%s)]",__DATE__,__TIME__,acType,bits,RELEASE_DATE);
-    printf("%s %s\n",name,acVersion);
+    printf("%s %s\n",sanitized(name),acVersion);
 #else  /* !_WIN32 */
     if (alwaysprint) {
         printf("%s\n",DW_VERSION_DATE_STR);
@@ -72,7 +72,7 @@ print_args(UNUSEDARG int argc, UNUSEDARG char *argv[])
     int index = 1;
     printf("Arguments: ");
     for (index = 1; index < argc; ++index) {
-        printf("%s ",argv[index]);
+        printf("%s ",sanitized(argv[index]));
     }
     printf("\n");
 #endif /* _WIN32 */

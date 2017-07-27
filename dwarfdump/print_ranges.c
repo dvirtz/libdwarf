@@ -50,14 +50,14 @@ print_ranges(Dwarf_Debug dbg)
     Dwarf_Error pr_err = 0;
 
     current_section_id = DEBUG_RANGES;
-    if (!do_print_dwarf) {
+    if (!glflags.gf_do_print_dwarf) {
         return;
     }
     res = dwarf_get_ranges_section_name(dbg,&sec_name,&pr_err);
     if (res != DW_DLV_OK ||  !sec_name || !strlen(sec_name)) {
         sec_name = ".debug_ranges";
     }
-    printf("\n%s\n",sec_name);
+    printf("\n%s\n",sanitized(sec_name));
 
     /*  Turn off dense, we do not want  print_ranges_list_to_extra
         to use dense form here. */
@@ -81,16 +81,16 @@ print_ranges(Dwarf_Debug dbg)
                 &esb_string);
             dwarf_ranges_dealloc(dbg,rangeset,rangecount);
             val = esb_get_string(&esb_string);
-            printf("%s",val);
+            printf("%s",sanitized(val));
             ++group_number;
         } else if (rres == DW_DLV_NO_ENTRY) {
-            printf("End of %s.\n",sec_name);
+            printf("End of %s.\n",sanitized(sec_name));
             break;
         } else {
             /*  ERROR, which does not quite mean a real error,
                 as we might just be misaligned reading things without
                 a DW_AT_ranges offset.*/
-            printf("End of %s..\n",sec_name);
+            printf("End of %s..\n",sanitized(sec_name));
             break;
         }
         off += bytecount;
@@ -180,9 +180,9 @@ printf("**** END ****\n");
                     bError = TRUE;
                     snprintf(errbuf,sizeof(errbuf),
                         "%s: Address outside a "
-                        "valid .text range",sec_name);
+                        "valid .text range",sanitized(sec_name));
                     DWARF_CHECK_ERROR(ranges_result, errbuf);
-                    if (check_verbose_mode && do_print) {
+                    if (glflags.gf_check_verbose_mode && do_print) {
                         /*  Update DIEs offset just for printing */
                         int dioff_res = dwarf_die_offsets(cu_die,
                             &DIE_overall_offset,&DIE_offset,&rlerr);
@@ -213,7 +213,7 @@ printf("**** END ****\n");
 
     /*  In the case of errors, we have to print the range records that
         caused the error. */
-    if (bError && check_verbose_mode && do_print) {
+    if (bError && glflags.gf_check_verbose_mode && do_print) {
         struct esb_s rangesstr;
         esb_constructor(&rangesstr);
 
@@ -221,13 +221,14 @@ printf("**** END ****\n");
         print_ranges_list_to_extra(dbg,original_off,
             rangeset,rangecount,bytecount,
             &rangesstr);
-        printf("%s\n", esb_get_string(&rangesstr));
+        printf("%s\n", sanitized(esb_get_string(&rangesstr)));
         esb_destructor(&rangesstr);
     }
 
     /*  In the case of printing unique errors, stop the printing of any
         subsequent errors, which have the same text. */
-    if (bError && check_verbose_mode && print_unique_errors) {
+    if (bError && glflags.gf_check_verbose_mode &&
+        glflags.gf_print_unique_errors) {
         do_print = FALSE;
     }
 }

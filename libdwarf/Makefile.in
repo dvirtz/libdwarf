@@ -75,6 +75,7 @@ OBJS= dwarf_abbrev.o \
         dwarf_arange.o \
         dwarf_die_deliv.o \
         dwarf_dsc.o \
+        dwarf_dnames.o \
         dwarf_elf_access.o \
         dwarf_error.o \
         dwarf_form.o \
@@ -84,6 +85,7 @@ OBJS= dwarf_abbrev.o \
         dwarf_funcs.o \
         dwarf_gdbindex.o \
         dwarf_global.o \
+        dwarf_groups.o \
         dwarf_harmless.o \
         dwarf_init_finish.o  \
         dwarf_leb.o \
@@ -137,8 +139,11 @@ libdwarf.so: dwarf_names.h dwarf_names.c $(OBJS) dwarf_names.o
 	$(CC) $(CFLAGS) $(LDFLAGS) -shared $(OBJS) -Wl,-soname=$(SONAME)  dwarf_names.o $(dwfzlib) -o $@
 	ln libdwarf.so $(SONAME)
 
-none:
-	echo "do nothing " $@
+nosharedlibrary:
+	echo "Not building shared library libdwarf.so"
+noarchivelibrary:
+	echo "Not building archive library libdwarf.a"
+
 dwgetopt.o: $(srcdir)/dwgetopt.c $(srcdir)/dwgetopt.h
 	$(HOSTCC) $(HOSTCFLAGS) -c $(srcdir)/dwgetopt.c
 dwarf_loc.o: $(srcdir)/dwarf_loc.c  $(srcdir)/dwarf_loc2.c  $(srcdir)/dwarf_loc.h 
@@ -219,6 +224,7 @@ clean:
 	rm -f ./dwarftied
 	rm -f ./errmsg_check
 	rm -f ./errmsg_check_list
+	rm -f *~
 
 install: all
 	echo "No install provided, see comments in the README"

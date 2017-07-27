@@ -1,7 +1,7 @@
 /*
 
   Copyright (C) 2000-2005 Silicon Graphics, Inc. All Rights Reserved.
-  Portions Copyright (C) 2008-2016 David Anderson.  All Rights Reserved.
+  Portions Copyright (C) 2008-2017 David Anderson.  All Rights Reserved.
 
   This program is free software; you can redistribute it and/or modify it
   under the terms of version 2.1 of the GNU Lesser General Public License
@@ -121,7 +121,7 @@ const char *_dwarf_errmsgs[] = {
     "DW_DLE_CU_LENGTH_ERROR (47)",
     "DW_DLE_VERSION_STAMP_ERROR (48)",
     "DW_DLE_ABBREV_OFFSET_ERROR (49)",
-    "DW_DLE_ADDRESS_SIZE_ERROR (50) Either too large or zero",
+    "DW_DLE_ADDRESS_SIZE_ERROR (50) size too large",
     "DW_DLE_DEBUG_INFO_PTR_NULL (51)",
     "DW_DLE_DIE_NULL (52)",
     "DW_DLE_STRING_OFFSET_BAD (53)",
@@ -446,6 +446,31 @@ const char *_dwarf_errmsgs[] = {
     "DW_DLE_DEFINE_FILE_STRING_BAD(365) runs off end of section",
     "DW_DLE_MACRO_STRING_BAD(366) DWARF5 macro def/undef string runs off section data",
     "DW_DLE_MACINFO_STRING_BAD(367) DWARF2..4 macro def/undef string runs off section data",
+    "DW_DLE_ZLIB_UNCOMPRESS_ERROR(368) Surely an invalid uncompress length",
+    "DW_DLE_IMPROPER_DWO_ID(369)",
+    "DW_DLE_GROUPNUMBER_ERROR(370) An error determining default target group number",
+    "DW_DLE_ADDRESS_SIZE_ZERO(371)",
+    "DW_DLE_DEBUG_NAMES_HEADER_ERROR(372)",
+    "DW_DLE_DEBUG_NAMES_AUG_STRING_ERROR(373) corrupt dwarf",
+    "DW_DLE_DEBUG_NAMES_PAD_NON_ZERO(374) corrupt dwarf",
+    "DW_DLE_DEBUG_NAMES_OFF_END(375) corrupt dwarf",
+    "DW_DLE_DEBUG_NAMES_ABBREV_OVERFLOW(376) Surprising overrun of fixed size array",
+    "DW_DLE_DEBUG_NAMES_ABBREV_CORRUPTION(377)",
+    "DW_DLE_DEBUG_NAMES_NULL_POINTER(378) null argument",
+    "DW_DLE_DEBUG_NAMES_BAD_INDEX_ARG(379) index outside valid range",
+    "DW_DLE_DEBUG_NAMES_ENTRYPOOL_OFFSET(380) offset outside entrypool",
+    "DW_DLE_DEBUG_NAMES_UNHANDLED_FORM(381) Might be corrupt dwarf or incomplete DWARF support",
+    "DW_DLE_LNCT_CODE_UNKNOWN(382)",
+    "DW_DLE_LNCT_FORM_CODE_NOT_HANDLED(383) Might be bad form or just not implemented",
+    "DW_DLE_LINE_HEADER_LENGTH_BOTCH(384) Internal libdwarf error",
+    "DW_DLE_STRING_HASHTAB_IDENTITY_ERROR(385) Internal libdwarf error",
+    "DW_DLE_UNIT_TYPE_NOT_HANDLED(386) Possibly incomplete dwarf5 support",
+    "DW_DLE_GROUP_MAP_ALLOC(387) Out of malloc space",
+    "DW_DLE_GROUP_MAP_DUPLICATE(388) Each section # should appear once",
+    "DW_DLE_GROUP_COUNT_ERROR(389) An inconsistency in map entry count",
+    "DW_DLE_GROUP_INTERNAL_ERROR(390) libdwarf data corruption",
+    "DW_DLE_GROUP_LOAD_ERROR(391) corrupt data?",
+    "DW_DLE_GROUP_LOAD_READ_ERROR(392)",
 };
 
 #ifdef TESTING

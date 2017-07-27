@@ -1,6 +1,6 @@
 /*
   Copyright (C) 2005 Silicon Graphics, Inc.  All Rights Reserved.
-  Portions Copyright (C) 2013-2016 David Anderson. All Rights Reserved.
+  Portions Copyright (C) 2013-2017 David Anderson. All Rights Reserved.
   This program is free software; you can redistribute it and/or modify it
   under the terms of version 2 of the GNU General Public License as
   published by the Free Software Foundation.
@@ -142,12 +142,14 @@ esb_allocate_more(struct esb_s *data, size_t len)
     data->esb_allocated_size = new_size;
 }
 
+/*  Ensure that the total buffer length is large enough that
+    at least minlen bytes are available, unused,
+    in the allocation. */
 void
 esb_force_allocation(struct esb_s *data, size_t minlen)
 {
-    if (data->esb_allocated_size < minlen) {
-        size_t increment = minlen - data->esb_allocated_size;
-        esb_allocate_more(data,increment);
+    if (data->esb_allocated_size < (data->esb_used_bytes + minlen)) {
+        esb_allocate_more(data,minlen);
     }
 }
 
@@ -376,20 +378,20 @@ validate_esb(int instance,
    size_t expalloc,
    const char *expout)
 {
-    printf("TEST instance %d\n",instance);
+    printf("  TEST instance %d\n",instance);
     if (esb_string_len(d) != explen) {
         ++failcount;
-        printf("FAIL instance %d  esb_string_len() %u explen %u\n",
+        printf("  FAIL instance %d  esb_string_len() %u explen %u\n",
             instance,(unsigned)esb_string_len(d),(unsigned)explen);
     }
     if (d->esb_allocated_size != expalloc) {
         ++failcount;
-        printf("FAIL instance %d  esb_allocated_size  %u expalloc %u\n",
+        printf("  FAIL instance %d  esb_allocated_size  %u expalloc %u\n",
             instance,(unsigned)d->esb_allocated_size,(unsigned)expalloc);
     }
     if(strcmp(esb_get_string(d),expout)) {
         ++failcount;
-        printf("FAIL instance %d esb_get_stringr %s expstr %s\n",
+        printf("  FAIL instance %d esb_get_stringr %s expstr %s\n",
             instance,esb_get_string(d),expout);
     }
 }
@@ -453,7 +455,7 @@ int main()
         struct esb_s d;
         static char oddarray[7] = {'a','b',0,'c','c','d',0};
         esb_constructor(&d);
-        fprintf(stderr,"esb_appendn call error(intentional). Expect msg on stderr\n");
+        fprintf(stderr,"  esb_appendn call error(intentional). Expect msg on stderr\n");
         /* This provokes a msg on stderr. Bad input. */
         esb_appendn(&d,oddarray,6);
         validate_esb(10,&d,2,3,"ab");
