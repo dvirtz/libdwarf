@@ -25,9 +25,10 @@
 
 /* These do little except on Windows */
 
-#include "config.h"
-#include "warningcontrol.h"
 #include "common.h"
+#include "config.h"
+#include "globals.h"
+#include "warningcontrol.h"
 #include <stdio.h>
 /* Windows specific header files */
 #ifdef HAVE_STDAFX_H
@@ -35,57 +36,50 @@
 #endif /* HAVE_STDAFX_H */
 
 #define DW_VERSION_DATE_STR " 2017-07-09 16:38:09-07:00  "
-#define RELEASE_DATE      "20160307"
+#define RELEASE_DATE "20160307"
 
 /* The Linux/Unix version does not want a version string to print
    unless -V is on the command line. */
-void
-print_version_details(UNUSEDARG const char * name,int alwaysprint)
-{
+void print_version_details(UNUSEDARG const char *name, int alwaysprint) {
 #ifdef _WIN32
 #ifdef _DEBUG
-    char *acType = "Debug";
+  char *acType = "Debug";
 #else
-    char *acType = "Release";
+  char *acType = "Release";
 #endif /* _DEBUG */
 #ifdef _WIN64
   char *bits = "64";
 #else
   char *bits = "32";
 #endif /* _WIN64 */
-    static char acVersion[64];
-    snprintf(acVersion,sizeof(acVersion),
-        "[%s %s %s Win%s (%s)]",__DATE__,__TIME__,acType,bits,RELEASE_DATE);
-    printf("%s %s\n",sanitized(name),acVersion);
+  static char acVersion[64];
+  snprintf(acVersion, sizeof(acVersion), "[%s %s %s Win%s (%s)]", __DATE__,
+           __TIME__, acType, bits, RELEASE_DATE);
+  printf("%s %s\n", sanitized(name), acVersion);
 #else  /* !_WIN32 */
-    if (alwaysprint) {
-        printf("%s\n",DW_VERSION_DATE_STR);
-    }
+  if (alwaysprint) {
+    printf("%s\n", DW_VERSION_DATE_STR);
+  }
 #endif /* _WIN32 */
 }
 
-
-void
-print_args(UNUSEDARG int argc, UNUSEDARG char *argv[])
-{
+void print_args(UNUSEDARG int argc, UNUSEDARG char *argv[]) {
 #ifdef _WIN32
-    int index = 1;
-    printf("Arguments: ");
-    for (index = 1; index < argc; ++index) {
-        printf("%s ",sanitized(argv[index]));
-    }
-    printf("\n");
+  int index = 1;
+  printf("Arguments: ");
+  for (index = 1; index < argc; ++index) {
+    printf("%s ", sanitized(argv[index]));
+  }
+  printf("\n");
 #endif /* _WIN32 */
 }
 
-void
-print_usage_message(const char *program_name, const char **text)
-{
-    unsigned i = 0;
+void print_usage_message(const char *program_name, const char **text) {
+  unsigned i = 0;
 #ifndef _WIN32
-    fprintf(stderr,"Usage:  %s  <options> <object file>\n", program_name);
+  fprintf(stderr, "Usage:  %s  <options> <object file>\n", program_name);
 #endif /* _WIN32 */
-    for (i = 0; *text[i]; ++i) {
-        fprintf(stderr,"%s\n", text[i]);
-    }
+  for (i = 0; *text[i]; ++i) {
+    fprintf(stderr, "%s\n", text[i]);
+  }
 }
